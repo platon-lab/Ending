@@ -56,7 +56,7 @@
             100% { opacity: 0.3; }
         }
 
-        /* Контейнер для відео */
+        /* Фоновий відеo (для СПІЛКИ) */
         #video-bg {
             position: fixed;
             top: 0;
@@ -70,7 +70,24 @@
         }
 
         #video-bg.active {
-            opacity: 0.45; /* Напівпрозорість як у запиті */
+            opacity: 0.45;
+        }
+
+        /* Центральний відео-блок для персонажів (тепер теж на весь екран прозоро) */
+        #video-char {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1.2s ease;
+            z-index: 1;
+        }
+
+        #video-char.active {
+            opacity: 0.45;
         }
 
         /* Контейнер титрів */
@@ -78,7 +95,7 @@
             position: relative;
             width: 100%;
             height: 100%;
-            z-index: 2;
+            z-index: 3;
             mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
             -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
         }
@@ -140,7 +157,7 @@
             font-weight: 900;
             letter-spacing: 15px;
             opacity: 0;
-            z-index: 3;
+            z-index: 5;
             transition: opacity 4s ease;
             white-space: nowrap;
         }
@@ -159,7 +176,11 @@
         <h2>Натисніть, щоб почати</h2>
     </div>
 
-    <video id="video-bg" muted playsinline></video>
+    <!-- Фоновий відеo (тільки для СПІЛКИ - прозоро) -->
+    <video id="video-bg" muted playsinline loop></video>
+
+    <!-- Центральний відеo для персонажів -->
+    <video id="video-char" muted playsinline loop></video>
     
     <audio id="bg-music" loop>
         <source src="Music.mp3" type="audio/mpeg">
@@ -184,32 +205,32 @@
                 <div class="role">Любитель тваринок♥️</div><div class="name">Платон</div>
             </div>
 
-            <div class="section char-section" data-video="Tito.mp4">
+            <div class="section char-section" data-video="Tito.mp4" data-type="char">
                 <h2 class="character-title">TITO</h2>
                 <p class="character-desc">Гарний хлопчик<br>Головний герой пригод<br>Завжди хоробрий<br>Справжній друг</p>
             </div>
 
-            <div class="section char-section" data-video="Smartik.mp4">
+            <div class="section char-section" data-video="Smartik.mp4" data-type="char">
                 <h2 class="character-title">SMARTIK</h2>
                 <p class="character-desc">Розумний герой<br>Швидкий і спритний<br>Майстер ухиляння</p>
             </div>
 
-            <div class="section char-section" data-video="Junior.mp4">
+            <div class="section char-section" data-video="Junior.mp4" data-type="char">
                 <h2 class="character-title">JUNIOR</h2>
                 <p class="character-desc">Смішний але сміливий<br>Ніколи не здається</p>
             </div>
 
-            <div class="section char-section" data-video="Fil.mp4">
+            <div class="section char-section" data-video="Fil.mp4" data-type="char">
                 <h2 class="character-title">FIL</h2>
                 <p class="character-desc">Сильний герой<br>Завжди допомагає друзям</p>
             </div>
 
-            <div class="section char-section" data-video="Milka.mp4">
+            <div class="section char-section" data-video="Milka.mp4" data-type="char">
                 <h2 class="character-title">MILKA</h2>
                 <p class="character-desc">Добра героїня<br>Завжди поруч з друзями</p>
             </div>
 
-            <div class="section">
+            <div class="section char-section" data-video="6.mp4" data-type="bg">
                 <h2 class="character-title">🤝 СПІЛКА</h2>
                 <p class="character-desc">Спілка героїв<br>Друзі назавжди<br>Разом вони перемогли зло</p>
             </div>
@@ -229,16 +250,18 @@
 
     <script>
         const content = document.getElementById('credits-content');
-        const video = document.getElementById('video-bg');
+        const videoBg = document.getElementById('video-bg');
+        const videoChar = document.getElementById('video-char');
         const music = document.getElementById('bg-music');
         const overlay = document.getElementById('overlay');
         const theEnd = document.getElementById('the-end');
         const charSections = document.querySelectorAll('.char-section');
 
         let scrollY = 0;
-        let speed = 1.2; // Швидкість прокрутки
+        let speed = 1.2;
         let isRunning = false;
         let currentVideoSrc = "";
+        let currentVideoType = ""; // "char" або "bg"
 
         function startCredits() {
             if (isRunning) return;
@@ -260,22 +283,29 @@
 
             const rect = content.getBoundingClientRect();
             
-            // Перевірка, яка секція зараз по центру для зміни відео
+            let nearSection = false;
+
             charSections.forEach(section => {
                 const sectionRect = section.getBoundingClientRect();
                 const sectionMid = sectionRect.top + (sectionRect.height / 2);
                 const screenMid = window.innerHeight / 2;
 
-                // Якщо секція біля центру екрану
-                if (Math.abs(sectionMid - screenMid) < 300) {
+                if (Math.abs(sectionMid - screenMid) < sectionRect.height / 2) {
+                    nearSection = true;
                     const videoSrc = section.getAttribute('data-video');
+                    const videoType = section.getAttribute('data-type');
+
                     if (currentVideoSrc !== videoSrc) {
-                        changeVideo(videoSrc);
+                        changeVideo(videoSrc, videoType);
                     }
                 }
             });
 
-            // Якщо титри закінчились
+            // Якщо жодна char-секція не в зоні — ховаємо обидва відео
+            if (!nearSection && currentVideoSrc !== "") {
+                hideAllVideos();
+            }
+
             if (rect.bottom < window.innerHeight / 2) {
                 finishCredits();
             } else {
@@ -283,38 +313,76 @@
             }
         }
 
-        function changeVideo(src) {
-            currentVideoSrc = src;
-            video.classList.remove('active');
-            
+        function hideAllVideos() {
+            currentVideoSrc = "";
+            currentVideoType = "";
+
+            videoChar.classList.remove('active');
+            videoBg.classList.remove('active');
+
             setTimeout(() => {
-                video.src = src;
-                video.load();
-                video.play().then(() => {
-                    video.classList.add('active');
-                }).catch(e => console.log("Video wait", e));
-            }, 500);
+                if (!videoChar.classList.contains('active')) {
+                    videoChar.pause();
+                    videoChar.src = "";
+                }
+                if (!videoBg.classList.contains('active')) {
+                    videoBg.pause();
+                    videoBg.src = "";
+                }
+            }, 800);
         }
 
-        // Обробка завершення відео для перемикання (якщо титри йдуть повільно)
-        video.onended = () => {
-            // Відео зациклюється в межах свого блоку автоматично через зміну src в scroll,
-            // або можна просто знову запустити, якщо воно закінчилось раніше тексту
-            video.play();
-        };
+        function changeVideo(src, type) {
+            currentVideoSrc = src;
+            currentVideoType = type;
+
+            if (type === "char") {
+                // Персонаж — на весь екран прозоро (videoChar як фон)
+                videoBg.classList.remove('active');
+                setTimeout(() => {
+                    videoBg.pause();
+                    videoBg.src = "";
+                }, 800);
+
+                videoChar.classList.remove('active');
+                setTimeout(() => {
+                    videoChar.src = src;
+                    videoChar.load();
+                    videoChar.play().then(() => {
+                        videoChar.classList.add('active');
+                    }).catch(e => console.log("Char video error", e));
+                }, 400);
+
+            } else if (type === "bg") {
+                // СПІЛКА — теж на весь екран прозоро (videoBg)
+                videoChar.classList.remove('active');
+                setTimeout(() => {
+                    videoChar.pause();
+                    videoChar.src = "";
+                }, 800);
+
+                videoBg.classList.remove('active');
+                setTimeout(() => {
+                    videoBg.src = src;
+                    videoBg.load();
+                    videoBg.play().then(() => {
+                        videoBg.classList.add('active');
+                    }).catch(e => console.log("BG video error", e));
+                }, 400);
+            }
+        }
 
         function finishCredits() {
             isRunning = false;
-            video.classList.remove('active');
+            videoChar.classList.remove('active');
+            videoBg.classList.remove('active');
             setTimeout(() => {
                 theEnd.style.opacity = '1';
             }, 500);
         }
 
-        // Оптимізація для мобільних (запобігання скролу пальцем)
         document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
     </script>
 </body>
 
 </html>
-

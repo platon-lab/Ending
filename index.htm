@@ -158,8 +158,10 @@
             letter-spacing: 15px;
             opacity: 0;
             z-index: 5;
-            transition: opacity 4s ease;
-            white-space: nowrap;
+            transition: opacity 4s ease, font-size 0.5s ease;
+            white-space: normal;
+            text-align: center;
+            width: 90%;
         }
 
         @media (max-width: 600px) {
@@ -176,10 +178,8 @@
         <h2>Натисніть, щоб почати</h2>
     </div>
 
-    <!-- Фоновий відеo (тільки для СПІЛКИ - прозоро) -->
     <video id="video-bg" muted playsinline loop></video>
 
-    <!-- Центральний відеo для персонажів -->
     <video id="video-char" muted playsinline loop></video>
     
     <audio id="bg-music" loop>
@@ -301,7 +301,6 @@
                 }
             });
 
-            // Якщо жодна char-секція не в зоні — ховаємо обидва відео
             if (!nearSection && currentVideoSrc !== "") {
                 hideAllVideos();
             }
@@ -337,7 +336,6 @@
             currentVideoType = type;
 
             if (type === "char") {
-                // Персонаж — на весь екран прозоро (videoChar як фон)
                 videoBg.classList.remove('active');
                 setTimeout(() => {
                     videoBg.pause();
@@ -354,7 +352,6 @@
                 }, 400);
 
             } else if (type === "bg") {
-                // СПІЛКА — теж на весь екран прозоро (videoBg)
                 videoChar.classList.remove('active');
                 setTimeout(() => {
                     videoChar.pause();
@@ -378,11 +375,41 @@
             videoBg.classList.remove('active');
             setTimeout(() => {
                 theEnd.style.opacity = '1';
+                // Запуск секретної послідовності через 60 секунд
+                startSecretTimer();
             }, 500);
+        }
+
+        function startSecretTimer() {
+            setTimeout(() => {
+                theEnd.innerText = "Ти що тут робиш?";
+                
+                setTimeout(() => {
+                    theEnd.innerText = "Ні, навіть не вздумай!";
+                    
+                    setTimeout(() => {
+                        theEnd.style.fontSize = "2.5rem"; // Робимо трохи менше, щоб влізло
+                        theEnd.innerText = "ТИ ЩО ТУТ ВИРІШИВ УСІ СЕКРЕТИ ЗНАЙТИ?!";
+                        
+                        setTimeout(() => {
+                            theEnd.style.fontSize = "5rem";
+                            theEnd.innerText = "Ну ладно...";
+                            
+                            setTimeout(() => {
+                                theEnd.style.fontSize = "3rem";
+                                theEnd.innerText = "НУ ЗАРАЗ ТОБІ БУДЕ СЕКРЕТ!";
+                                
+                                setTimeout(() => {
+                                    window.location.href = "https://platon-lab.github.io/Mega-Secret/";
+                                }, 5000);
+                            }, 5000);
+                        }, 5000);
+                    }, 5000);
+                }, 5000);
+            }, 60000); // 1 хвилина очікування
         }
 
         document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
     </script>
 </body>
-
 </html>

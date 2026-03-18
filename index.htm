@@ -73,7 +73,7 @@
             opacity: 0.45;
         }
 
-        /* Центральний відео-блок для персонажів (тепер теж на весь екран прозоро) */
+        /* Центральний відео-блок для персонажів */
         #video-char {
             position: fixed;
             top: 0;
@@ -230,6 +230,11 @@
                 <p class="character-desc">Добра героїня<br>Завжди поруч з друзями</p>
             </div>
 
+            <div class="section char-section" data-video="Bark.mp4" data-type="char">
+                <h2 class="character-title">BARK</h2>
+                <p class="character-desc">Ще один герой ігор<br>Вірний товариш<br>Завжди в центрі подій</p>
+            </div>
+
             <div class="section char-section" data-video="6.mp4" data-type="bg">
                 <h2 class="character-title">🤝 СПІЛКА</h2>
                 <p class="character-desc">Спілка героїв<br>Друзі назавжди<br>Разом вони перемогли зло</p>
@@ -375,7 +380,6 @@
             videoBg.classList.remove('active');
             setTimeout(() => {
                 theEnd.style.opacity = '1';
-                // Запуск секретної послідовності через 60 секунд
                 startSecretTimer();
             }, 500);
         }
@@ -388,7 +392,7 @@
                     theEnd.innerText = "Ні, навіть не вздумай!";
                     
                     setTimeout(() => {
-                        theEnd.style.fontSize = "2.5rem"; // Робимо трохи менше, щоб влізло
+                        theEnd.style.fontSize = "2.5rem"; 
                         theEnd.innerText = "ТИ ЩО ТУТ ВИРІШИВ УСІ СЕКРЕТИ ЗНАЙТИ?!";
                         
                         setTimeout(() => {
@@ -406,7 +410,7 @@
                         }, 5000);
                     }, 5000);
                 }, 5000);
-            }, 60000); // 1 хвилина очікування
+            }, 60000); 
         }
 
         document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
